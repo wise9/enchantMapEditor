@@ -54,11 +54,14 @@ html.createButton.onclick = function() {
 		var edit= document.getElementById('edit');
 		html.mapImage.src = iv;
 		start(wv, hv, iv);
-		edit.innerHTML+= '<br />矢印キーでスクロール';
+		edit.innerHTML+= '矢印キーでスクロール';
+		edit.appendChild(html.icons);
 		edit.appendChild(html.editTabs.element);
-		edit.appendChild(html.selectedImage);
+		//edit.appendChild(html.selectedImage);
+		//edit.appendChild(html.blankChip);
 		edit.appendChild(html.mapImage);
 		edit.appendChild(html.geneButton);
+		html.blankChip.draw();
     } else {
         alert("input number");                                                  
     }                                                                           
@@ -132,6 +135,9 @@ html.mapImage.onclick = function(e) {
 	html.selectedImage.update(x*16, y*16);
 };
 
+html.icons = document.createElement('div');
+//html.icons.style.clear = 'both';
+
 html.selectedImage = document.createElement('canvas');
 html.selectedImage.width = 48;
 html.selectedImage.height = 48;
@@ -143,6 +149,38 @@ html.selectedImage.update = function(x, y) {
 	ctx.lineWidth = 3;
 	ctx.strokeRect(0, 0, 48, 48);
 };
+html.selectedImage.clear = function() {
+	var ctx = this.getContext('2d');
+	ctx.clearRect(0, 0, 48, 48);
+	ctx.strokeStyle = '#ff5544';
+	ctx.lineWidth = 3;
+	ctx.strokeRect(0, 0, 48, 48);
+	ctx.lineWidth = 2;
+	ctx.moveTo(0, 0);
+	ctx.lineTo(48, 48);
+	ctx.stroke();
+};
+
+html.blankChip = document.createElement('canvas');
+html.blankChip.width = 48;
+html.blankChip.height = 48;
+html.blankChip.draw = function() {
+	var ctx = this.getContext('2d');
+	ctx.strokeStyle = 'Red';
+	ctx.lineWidth = 3;
+	ctx.strokeRect(0, 0, 48, 48);
+	ctx.lineWidth = 2;
+	ctx.moveTo(0, 0);
+	ctx.lineTo(48, 48);
+	ctx.stroke();
+};
+html.blankChip.onclick = function() {
+	app.selectedChip = -1;
+	html.selectedImage.clear();
+};
+
+html.icons.appendChild(html.selectedImage);
+html.icons.appendChild(html.blankChip);
 
 html.geneButton = document.createElement('input');
 html.geneButton.type = 'button';

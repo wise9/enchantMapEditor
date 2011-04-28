@@ -123,26 +123,42 @@ function start(mapWidth, mapHeight, gameImage) {
 		app.maps.fgMap = fgMap;
 		app.maps.colMap = colMap;
 
+		var mapFrame = new Sprite(mapWidth * 16, mapHeight * 16);
+		var frame = new Surface(mapWidth * 16, mapHeight * 16);
+		frame.context.strokeStyle = 'Red';
+		frame.context.lineWidth = 4;
+		frame.context.strokeRect(0, 0, mapWidth * 16, mapHeight * 16);
+		mapFrame.image = frame;
+
 		var bg = new Sprite(640, 480);
 		
 		var stage = new Group();
 		stage.addChild(bgMap);
 		stage.addChild(fgMap);
+		stage.addChild(mapFrame);
 		game.rootScene.addChild(stage);
 		game.rootScene.addChild(bg);
 		game.rootScene.backgroundColor = '#eee';
 		
 		game.rootScene.addEventListener('leftbuttondown', function() {
-			stage.x -= 8;
+			if (stage.x + mapWidth * 16 > 640) {
+				stage.x -= 16;
+			}
 		});
 		game.rootScene.addEventListener('rightbuttondown', function() {
-			stage.x += 8;
+			if (stage.x  <  0) {
+				stage.x += 16;
+			}
 		});
 		game.rootScene.addEventListener('upbuttondown', function() {
-			stage.y -= 8;
+			if (stage.y + mapHeight * 16 > 480) {
+				stage.y -= 16;
+			}
 		});
 		game.rootScene.addEventListener('downbuttondown', function() {
-			stage.y += 8;
+			if (stage.y < 0) {
+				stage.y += 16;
+			}
 		});
 
 		game.rootScene.addEventListener('abuttondown', function() {
