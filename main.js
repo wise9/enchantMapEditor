@@ -54,7 +54,7 @@ html.createButton.onclick = function() {
 		var edit= document.getElementById('edit');
 		html.mapImage.src = iv;
 		start(wv, hv, iv);
-		edit.innerHTML+= '<br />アローキーでスクロール';
+		edit.innerHTML+= '<br />矢印キーでスクロール';
 		edit.appendChild(html.editTabs.element);
 		edit.appendChild(html.selectedImage);
 		edit.appendChild(html.mapImage);
