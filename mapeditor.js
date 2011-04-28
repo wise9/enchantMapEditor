@@ -1,7 +1,7 @@
 function start(mapWidth, mapHeight, gameImage) {
 
-	enchant.Map.prototype.changeChip = function() {
-		this._data[app.bgLayer][app.chipY][app.chipX] = app.selectedChip;
+	enchant.Map.prototype.changeChip = function(num) {
+		this._data[num][app.chipY][app.chipX] = app.selectedChip;
 		this.image = game.assets[gameImage];
 	};
 	enchant.Map.prototype.addMap = function() {
@@ -161,9 +161,9 @@ function start(mapWidth, mapHeight, gameImage) {
 				colMap.getPaintNum();
 				colMap.paint();
 			} else if (app.bgMode) {
-				bgMap.changeChip(); 
+				bgMap.changeChip(app.bgLayer); 
 			} else {
-				fgMap.changeChip();
+				fgMap.changeChip(0);
 			}
 		});
 
@@ -178,7 +178,7 @@ function start(mapWidth, mapHeight, gameImage) {
 			if (app.collisionMode) {
 				colMap.paint();
 			} else if (app.bgMode) {	
-				bgMap.changeChip(0); 
+				bgMap.changeChip(app.bgLayer); 
 			} else {
 				fgMap.changeChip(0);
 			}

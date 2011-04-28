@@ -190,11 +190,11 @@ html.outputArea.updateValue = function() {
 	txt += 'var foreground = new Map(16, 16);\n';
 	txt += "foreground.image = game.assets['" + app.imagePath + "'];\n"; 
 	txt += 'foreground.loadData(';
-	for (var i = 0 ; i < app.maps.bgMap._data.length ; i++) {
+	for (var i = 0 ; i < app.maps.fgMap._data.length ; i++) {
 		txt += '[\n'
-		for (var j = 0 ; j < app.maps.bgMap._data[0].length ; j++) {
+		for (var j = 0 ; j < app.maps.fgMap._data[0].length ; j++) {
 			txt += '    [';
-			txt += app.maps.bgMap._data[i][j].toString();
+			txt += app.maps.fgMap._data[i][j].toString();
 			txt += '],\n';
 		}
 		txt = txt.slice(0,-2);
