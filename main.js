@@ -94,7 +94,7 @@ MenuTab.prototype = {
 
 html.editTabs = {}; 
 html.editTabs.names = [ 'bgTab', 'bg2Tab', 'fgTab', 'colTab' ]; 
-html.editTabs.current = 'colTab';
+html.editTabs.current = 'bgTab';
 html.editTabs.element = document.createElement('div');
 html.editTabs.bgTab = new MenuTab('bgTab');
 html.editTabs.bgTab.element.innerText = '背景';
