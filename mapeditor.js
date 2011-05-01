@@ -1,7 +1,60 @@
 function start(mapWidth, mapHeight, gameImage) {
 
-	enchant.Map.prototype.changeChip = function(num) {
-		this._data[num][app.chipY][app.chipX] = app.selectedChip;
+	enchant.Map.prototype.fill = function(num, x, y) {          
+		var matrix = this._data;
+		var fillnum = matrix[num][y][x];
+		var searchNewPoint = function(matrix, num, x, y, leftX, rightX) {
+			var inFillArea = false;
+			while(leftX <= rightX || inFillArea) {
+				if(matrix[num][y][leftX] == fillnum) {
+					inFillArea = true;
+				}
+				else if(inFillArea == true) {
+					searchLine(matrix, num, leftX-1, y);
+					inFillArea = false;
+				}
+				leftX++;
+			}
+		}
+		var searchLine = function(matrix, num, x, y) {
+			var leftX = x;
+			var rightX = x;
+			if(matrix[num][y][x] != fillnum)
+				return;
+			while(1) {
+				if(rightX < matrix[num][y].length - 1 && matrix[num][y][rightX+1] == fillnum) {
+					rightX++;
+					matrix[num][y][rightX] = "tmp";
+				}
+				else
+					break;
+			}
+			while(1) {
+				if(rightX > 0 && matrix[num][y][leftX-1] == fillnum) {
+					leftX--;
+					matrix[num][y][leftX] = "tmp";
+				}
+				else
+					break;
+			}
+			matrix[num][y][x] = "tmp";
+			if(typeof matrix[num][y+1] != "undefined")
+				searchNewPoint(matrix, num, x, y+1, leftX, rightX);
+			if(typeof matrix[num][y-1] != "undefined")
+				searchNewPoint(matrix, num, x, y-1, leftX, rightX);
+		}
+		searchLine(matrix, num, x, y);
+		for(i in matrix[num]) {
+			for(j in matrix[num][i]) {
+				if(matrix[num][i][j] == "tmp")
+					matrix[num][i][j] = app.selectedChip;
+			}
+		}
+		this.image = game.assets[gameImage];
+	};
+
+	enchant.Map.prototype.changeChip = function(num, x, y) {
+		this._data[num][y][x] = app.selectedChip;
 		this.image = game.assets[gameImage];
 	};
 	enchant.Map.prototype.addMap = function() {
@@ -22,63 +75,47 @@ function start(mapWidth, mapHeight, gameImage) {
     game.onload = function() {
 		var bgTab = document.getElementById('bgTab');
 		bgTab.onclick = function() {
-			if (html.editTabs.current == 'bgTab') {
+			if (app.currentTab == 'bgTab') {
 				return;
 			}
-			html.editTabs.current = 'bgTab';
+			app.currentTab = 'bgTab';
 			html.editTabs.changeActive('bgTab');
 			if (app.collisionMode) {
 				stage.removeChild(colMap);
 			}
 			app.bgLayer = 0;
-			app.bgMode = true;
-			app.bg2Mode = false;
-			app.fgmode = false;
-			app.collisionMode = false;
 		};
 		var bg2Tab = document.getElementById('bgTab2');
 		bg2Tab.onclick = function() {
-			if (html.editTabs.current == 'bg2Tab') {
+			if (app.currentTab == 'bg2Tab') {
 				return;
 			}
-			html.editTabs.current = 'bg2Tab';
+			app.currentTab = 'bg2Tab';
 			html.editTabs.changeActive('bg2Tab');
 			if (app.collisionMode) {
 				stage.removeChild(colMap);
 			}
 			app.bgLayer = 1;
-			app.bgMode = true;
-			app.bg2Mode = false;
-			app.fgmode = false;
-			app.collisionMode = false;
 		};
 		var fgTab = document.getElementById('fgTab');
 		fgTab.onclick = function() {
-			if (html.editTabs.current == 'f1gTab') {
+			if (app.currentTab == 'f1gTab') {
 				return;
 			}
-			html.editTabs.current = 'fgTab';
+			app.currentTab = 'fgTab';
 			html.editTabs.changeActive('fgTab');
 			if (app.collisionMode) {
 				stage.removeChild(colMap);
 			}
-			app.bgMode = false;
-			app.bg2Mode = false;
-			app.fgMode = true;
-			app.collisionMode = false;
 		};
 		var colTab = document.getElementById('colTab');
 		colTab.onclick = function() {
-			if (html.editTabs.current == 'colTab') {
+			if (app.currentTab == 'colTab') {
 				return;
 			}
-			html.editTabs.current = 'colTab';
+			app.currentTab = 'colTab';
 			html.editTabs.changeActive('colTab');
 			stage.addChild(colMap);
-			app.bgMode = false;
-			app.bg2Mode = false;
-			app.fgMode = false;
-			app.collisionMode = true;
 		};
 
 		function makeArray(num) {
@@ -106,16 +143,16 @@ function start(mapWidth, mapHeight, gameImage) {
 		fgMap.loadData(fgArr);
 		colMap.loadData(colArr);
 		colMap.paintNum = 0;
-		colMap.getPaintNum = function() {
-			var num = this._data[0][app.chipY][app.chipX];
+		colMap.getPaintNum = function(x, y) {
+			var num = this._data[0][y][x];
 			if (num == 0) {
 				this.paintNum = 1;
 			} else {
 				this.paintNum = 0;
 			}
 		};
-		colMap.paint = function() {
-			this._data[0][app.chipY][app.chipX] = this.paintNum;
+		colMap.paint = function(x, y) {
+			this._data[0][y][x] = this.paintNum;
 			this.image = game.assets['ui_16.png'];
 		};
 		
@@ -141,23 +178,23 @@ function start(mapWidth, mapHeight, gameImage) {
 		game.rootScene.backgroundColor = '#eee';
 		
 		game.rootScene.addEventListener('leftbuttondown', function() {
-			if (stage.x + mapWidth * 16 > 640) {
-				stage.x -= 16;
-			}
-		});
-		game.rootScene.addEventListener('rightbuttondown', function() {
 			if (stage.x  <  0) {
 				stage.x += 16;
 			}
 		});
+		game.rootScene.addEventListener('rightbuttondown', function() {
+			if (stage.x  > 640 - mapWidth * 16) {
+				stage.x -= 16;
+			}
+		});
 		game.rootScene.addEventListener('upbuttondown', function() {
-			if (stage.y + mapHeight * 16 > 480) {
-				stage.y -= 16;
+			if (stage.y < 0) {
+				stage.y += 16;
 			}
 		});
 		game.rootScene.addEventListener('downbuttondown', function() {
-			if (stage.y < 0) {
-				stage.y += 16;
+			if (stage.y > 480 - mapHeight * 16) {
+				stage.y -= 16;
 			}
 		});
 
@@ -170,16 +207,32 @@ function start(mapWidth, mapHeight, gameImage) {
 			app.chipY = Math.floor(e.localY / 16) | 0;
 			app.chipX -= Math.floor(stage.x / 16) | 0;
 			app.chipY -= Math.floor(stage.y / 16) | 0;
-			if (app.chipX >= mapWidth || app.chipY >= mapHeight) {
+			if (app.chipX >= mapWidth || app.chipY >= mapHeight
+				|| app.chipX < 0 || app.chipY < 0) {
 				return;
 			}
-			if (app.collisionMode) {
-				colMap.getPaintNum();
-				colMap.paint();
-			} else if (app.bgMode) {
-				bgMap.changeChip(app.bgLayer); 
-			} else {
-				fgMap.changeChip(0);
+			switch (app.currentTab) {
+			case 'bgTab':
+			case 'bg2Tab':
+				if (app.drawFunc == 'pen') {
+					bgMap.changeChip(app.bgLayer, app.chipX, app.chipY); 
+				} else if (app.drawFunc == 'fill') {
+					bgMap.fill(app.bgLayer, app.chipX, app.chipY);
+				}
+				break;
+			case 'fgTab':
+				if (app.drawFunc == 'pen') {
+					fgMap.changeChip(0, app.chipX, app.chipY); 
+				} else if (app.drawFunc == 'fill') {
+					fgMap.fill(0, app.chipX, app.chipY);
+				}
+				break;
+			case 'colTab':
+				colMap.getPaintNum(app.chipX, app.chipY);
+				colMap.paint(app.chipX, app.chipY);
+				break;
+			default:
+				break;
 			}
 		});
 
@@ -188,15 +241,31 @@ function start(mapWidth, mapHeight, gameImage) {
 			app.chipY = Math.floor(e.localY / 16) | 0;
 			app.chipX -= Math.floor(stage.x / 16) | 0;
 			app.chipY -= Math.floor(stage.y / 16) | 0;
-			if (app.chipX >= mapWidth || app.chipY >= mapHeight) {
+			if (app.chipX >= mapWidth || app.chipY >= mapHeight
+				|| app.chipX < 0 || app.chipY < 0) {
 				return;
 			}
-			if (app.collisionMode) {
-				colMap.paint();
-			} else if (app.bgMode) {	
-				bgMap.changeChip(app.bgLayer); 
-			} else {
-				fgMap.changeChip(0);
+			switch (app.currentTab) {
+			case 'bgTab':
+			case 'bg2Tab':
+				if (app.drawFunc == 'pen') {
+					bgMap.changeChip(app.bgLayer, app.chipX, app.chipY); 
+				} else if (app.drawFunc == 'fill') {
+					bgMap.fill(app.bgLayer, app.chipX, app.chipY);
+				}
+				break;
+			case 'fgTab':
+				if (app.drawFunc == 'pen') {
+					fgMap.changeChip(0, app.chipX, app.chipY); 
+				} else if (app.drawFunc == 'fill') {
+					fgMap.fill(0, app.chipX, app.chipY);
+				}
+				break;
+			case 'colTab':
+				colMap.paint(app.chipX, app.chipY);
+				break;
+			default:
+				break;
 			}
 		});
     };

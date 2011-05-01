@@ -16,12 +16,12 @@ app.maps= {};
 app.chipX = 0;
 app.chipY = 0;
 app.imagePath = '';
+app.currentTab = 'bgTab';
+app.drawFunc = 'pen';
 app.bgLayer = 0;
-app.bgMode = true;
-app.fgMode = false;
-app.collisionMode = false;
 app.selectedLayer = 0;
 app.selectedChip = 0;
+app.onClickFunction = function() {};
 
 var html = {};
 html.widthBox= document.createElement('input');                                 
@@ -62,6 +62,7 @@ html.createButton.onclick = function() {
 		edit.appendChild(html.mapImage);
 		edit.appendChild(html.geneButton);
 		html.blankChip.draw();
+		html.drawFunc.draw();
     } else {
         alert("input number");                                                  
     }                                                                           
@@ -94,7 +95,6 @@ MenuTab.prototype = {
 
 html.editTabs = {}; 
 html.editTabs.names = [ 'bgTab', 'bg2Tab', 'fgTab', 'colTab' ]; 
-html.editTabs.current = 'bgTab';
 html.editTabs.element = document.createElement('div');
 html.editTabs.bgTab = new MenuTab('bgTab');
 html.editTabs.bgTab.element.innerText = '背景';
@@ -179,8 +179,27 @@ html.blankChip.onclick = function() {
 	html.selectedImage.clear();
 };
 
+html.drawFunc = document.createElement('canvas');
+html.drawFunc.width = 48;
+html.drawFunc.height = 48;
+html.drawFunc.draw = function() {
+	var ctx = this.getContext('2d');
+	ctx.clearRect(0, 0, 48, 48);
+	ctx.font = '20px helvetica';
+	ctx.fillText(app.drawFunc, 8, 32); 
+};
+html.drawFunc.onclick = function() {
+	if (app.drawFunc == 'pen') {
+		app.drawFunc = 'fill';
+	} else {
+		app.drawFunc = 'pen';
+	}
+	this.draw();
+};
+
 html.icons.appendChild(html.selectedImage);
 html.icons.appendChild(html.blankChip);
+html.icons.appendChild(html.drawFunc);
 
 html.geneButton = document.createElement('input');
 html.geneButton.type = 'button';
