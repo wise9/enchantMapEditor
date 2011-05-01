@@ -80,9 +80,6 @@ function start(mapWidth, mapHeight, gameImage) {
 			}
 			app.currentTab = 'bgTab';
 			html.editTabs.changeActive('bgTab');
-			if (app.collisionMode) {
-				stage.removeChild(colMap);
-			}
 			app.bgLayer = 0;
 		};
 		var bg2Tab = document.getElementById('bgTab2');
@@ -92,9 +89,6 @@ function start(mapWidth, mapHeight, gameImage) {
 			}
 			app.currentTab = 'bg2Tab';
 			html.editTabs.changeActive('bg2Tab');
-			if (app.collisionMode) {
-				stage.removeChild(colMap);
-			}
 			app.bgLayer = 1;
 		};
 		var fgTab = document.getElementById('fgTab');
@@ -104,9 +98,6 @@ function start(mapWidth, mapHeight, gameImage) {
 			}
 			app.currentTab = 'fgTab';
 			html.editTabs.changeActive('fgTab');
-			if (app.collisionMode) {
-				stage.removeChild(colMap);
-			}
 		};
 		var colTab = document.getElementById('colTab');
 		colTab.onclick = function() {
@@ -115,7 +106,6 @@ function start(mapWidth, mapHeight, gameImage) {
 			}
 			app.currentTab = 'colTab';
 			html.editTabs.changeActive('colTab');
-			stage.addChild(colMap);
 		};
 
 		function makeArray(num) {
@@ -172,6 +162,7 @@ function start(mapWidth, mapHeight, gameImage) {
 		var stage = new Group();
 		stage.addChild(bgMap);
 		stage.addChild(fgMap);
+		stage.addChild(colMap);
 		stage.addChild(mapFrame);
 		game.rootScene.addChild(stage);
 		game.rootScene.addChild(bg);

@@ -683,7 +683,6 @@ enchant.Game = enchant.Class.create(enchant.EventTarget, {
                 var button = game._keybind[e.keyCode];
                 if (button) {
                     var e = new enchant.Event(button + 'buttondown');
-                    game.currentScene.dispatchEvent(e);
                     game.dispatchEvent(e);
                 }
             }, true);
@@ -692,7 +691,6 @@ enchant.Game = enchant.Class.create(enchant.EventTarget, {
                 var button = game._keybind[e.keyCode];
                 if (button) {
                     var e = new enchant.Event(button + 'buttonup');
-                    game.currentScene.dispatchEvent(e);
                     game.dispatchEvent(e);
                 }
             }, true);
