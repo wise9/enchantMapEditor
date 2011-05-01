@@ -1,5 +1,5 @@
 window.onload = function() {
-	enchant();
+	enchant('');
 	var enc = document.getElementById('enchant-stage');
 	//var edit = document.getElementById('edit');
     enc.innerHTML += 'Width: ';
