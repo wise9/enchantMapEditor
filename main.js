@@ -1,10 +1,6 @@
 window.onload = function() {
 	enchant('');
 	var enc = document.getElementById('enchant-stage');
-<<<<<<< HEAD
-=======
-	//var edit = document.getElementById('edit');
->>>>>>> 84d5d580119189e3d9bc9379025af01b79eef3ce
     enc.innerHTML += 'Width: ';
     enc.appendChild(html.widthBox);
     enc.innerHTML += '<br />Height: ';
@@ -60,11 +56,6 @@ html.createButton.onclick = function() {
 		edit.innerHTML+= '矢印キーでスクロール';
 		edit.appendChild(html.icons);
 		edit.appendChild(html.editTabs.element);
-<<<<<<< HEAD
-=======
-		//edit.appendChild(html.selectedImage);
-		//edit.appendChild(html.blankChip);
->>>>>>> 84d5d580119189e3d9bc9379025af01b79eef3ce
 		edit.appendChild(html.mapImage);
 		edit.appendChild(html.geneButton);
 		html.blankChip.draw();
@@ -142,10 +133,6 @@ html.mapImage.onclick = function(e) {
 };
 
 html.icons = document.createElement('div');
-<<<<<<< HEAD
-=======
-//html.icons.style.clear = 'both';
->>>>>>> 84d5d580119189e3d9bc9379025af01b79eef3ce
 
 html.selectedImage = document.createElement('canvas');
 html.selectedImage.width = 48;
