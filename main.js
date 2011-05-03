@@ -212,6 +212,7 @@ html.geneButton.onclick = function() {
 
 html.outputArea = document.createElement('textarea');
 html.outputArea.value = '';
+html.outputArea.id = 'textarea';
 html.outputArea.rows = 30;
 html.outputArea.cols = 120;
 html.outputArea.isDisplayed = false;
@@ -256,5 +257,10 @@ html.outputArea.updateValue = function() {
 	txt = txt.slice(0,-1);
 	txt += ');\n';
 
-	html.outputArea.value = txt;
+	this.value = txt;
 };
+html.outputArea.onclick = function() {
+	this.focus();
+	this.select();
+};
+
