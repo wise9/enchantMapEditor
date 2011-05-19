@@ -1,77 +1,120 @@
 window.onload = function() {
-	enchant('');
-	var enc = document.getElementById('enchant-stage');
-    enc.innerHTML += 'Width: ';
-    enc.appendChild(html.widthBox);
-    enc.innerHTML += '<br />Height: ';
-    enc.appendChild(html.heightBox);
-    enc.innerHTML += '<br />Source: ';
-	enc.appendChild(html.imageMenu);
-    enc.innerHTML += '<br />';
-    enc.appendChild(html.createButton);
+	enchant();
+	var stage = document.getElementById('enchant-stage');
+	stage.appendChild(mapForm.create());
+	document.getElementById('checkbox').checked = true;
 }
 var app = {};
 app.maps= {};
 app.chipX = 0;
 app.chipY = 0;
+app.chipType = 0;
 app.imagePath = '';
 app.currentTab = 'bgTab';
 app.drawFunc = 'pen';
+app.typeEdit = true;
+app.extendMode = false;
 app.bgLayer = 0;
 app.selectedLayer = 0;
 app.selectedChip = 0;
-app.onClickFunction = function() {};
 
-var html = {};
-html.widthBox= document.createElement('input');                                 
-html.widthBox.type = 'text';
-html.widthBox.id = 'widthBox';                                                  
+var mapForm = {
+	widthBox: (function() {
+		var element = document.createElement('input');
+		element.type = 'text';
+		element.id = 'widthBox';
+		return element;
+	})(),
+	heightBox: (function() {
+		var element = document.createElement('input');                               
+		element.type = 'text';
+		element.id = 'heightBox';                                                
+		return element;
+	})(),
+	imageMenu: (function() {
+		var element = document.createElement('select');
+		element.id = 'select';
+		element.options[0] = new Option('RPG', 'map0.gif');
+		element.options[1] = new Option('RPG', 'map1.gif');
+		return element;
+	})(),
+	extendOption: (function() {
+		var element = document.createElement('input');
+		element.type = 'checkbox';
+		element.id = 'checkbox';
+		return element;
+	})(),
+	acceptButton: (function() {
+		var element = document.createElement('input');                            
+		element.type = 'button';                                              
+		element.value = '作成';
+		element.onclick = function() {
+			var w = document.getElementById('widthBox');
+			var h = document.getElementById('heightBox');                               
+			var img = document.getElementById('select');
+			var ex = document.getElementById('checkbox');
+			var wv = parseInt(w.value, 10);                                             
+			var hv = parseInt(h.value, 10);
+			var iv = img.options[img.selectedIndex].value;
+			var ev = ex.checked;
+			app.imagePath = iv;
+			if(!(isNaN(wv)) && !(isNaN(hv))) {
+				var edit = document.getElementById('edit');
+				html.mapImage.src = iv;
+				app.extendMode = ev;
+				start(wv, hv, iv, ev);
+				edit.innerHTML+= '矢印キーでスクロール';
+				edit.appendChild(html.icons);
+				edit.appendChild(editorTabs.create());
+				edit.appendChild(html.mapImage);
+				edit.appendChild(html.geneButton);
+				html.blankChip.draw();
+				html.drawFunc.draw();
+			} else {
+				alert("input number");                                                  
+			}                                                                          
+		};                     
+		return element;
+	})(),
+	create: function() {
+		var form = document.createElement('div');
+		form.innerHTML += '横幅: ';
+		form.appendChild(this.widthBox);
+		form.innerHTML += '<br />縦幅: ';
+		form.appendChild(this.heightBox);
+		form.innerHTML += '<br />画像: ';
+		form.appendChild(this.imageMenu);
+		form.innerHTML += '<br />マップ拡張を有効にする';
+		form.appendChild(this.extendOption);
+		form.innerHTML += '<br />';
+		form.appendChild(this.acceptButton);
+		return form;
+	},
+};
 
-html.heightBox = document.createElement('input');                               
-html.heightBox.type = 'text';
-html.heightBox.id = 'heightBox';                                                
-
-html.imageMenu = document.createElement('select');
-html.imageMenu.id = 'select';
-var opt1 = new Option('RPG', 'map0.gif');
-var opt2 = new Option('2D Scroll', 'map1.gif');
-html.imageMenu.options[0] = opt1;
-html.imageMenu.options[1] = opt2;
-
-html.createButton = document.createElement('input');                            
-html.createButton.type = 'button';                                              
-html.createButton.value = '作成';
-html.createButton.onclick = function() {
-    var w = document.getElementById('widthBox');
-    var h = document.getElementById('heightBox');                               
-	var img = document.getElementById('select');
-    var wv = parseInt(w.value, 10);                                             
-    var hv = parseInt(h.value, 10);
-	var iv = img.options[img.selectedIndex].value;
-	app.imagePath = iv;
-    if(!(isNaN(wv)) && !(isNaN(hv))) {
-		var edit= document.getElementById('edit');
-		html.mapImage.src = iv;
-		start(wv, hv, iv);
-		edit.innerHTML+= '矢印キーでスクロール';
-		edit.appendChild(html.icons);
-		edit.appendChild(html.editTabs.element);
-		edit.appendChild(html.mapImage);
-		edit.appendChild(html.geneButton);
-		html.blankChip.draw();
-		html.drawFunc.draw();
-    } else {
-        alert("input number");                                                  
-    }                                                                           
-};                     
-
-var MenuTab = function(str) {
+var MenuTab = function(str, active) {
 	this.element = document.createElement('div');
 	this.element.style.width = '8%';
 	this.element.style.float = 'left';
 	this.element.style['text-align'] = 'center';
 	this.element.id = str;
-	this.isActive = false;
+	this.element.onclick = function() {
+		if (app.currentTab == this.id) {
+			return;
+		}
+		app.currentTab = this.id; 
+		editorTabs.changeActive();
+		if (app.currentTab == 'bg2Tab') {
+			app.bgLayer = 1;
+		} else {
+			app.bgLayer = 0;
+		}
+	};
+	if(active) {
+		this.isActive = true;
+	} else {
+		this.isActive = false;
+	}
 	this.applyColor();
 };
 MenuTab.prototype = {
@@ -90,33 +133,51 @@ MenuTab.prototype = {
 	}
 };
 
-html.editTabs = {}; 
-html.editTabs.names = [ 'bgTab', 'bg2Tab', 'fgTab', 'colTab' ]; 
-html.editTabs.element = document.createElement('div');
-html.editTabs.bgTab = new MenuTab('bgTab');
-html.editTabs.bgTab.element.innerText = '背景';
-html.editTabs.bgTab.isActive = true;
-html.editTabs.bgTab.applyColor();
-html.editTabs.element.appendChild(html.editTabs.bgTab.element);
-html.editTabs.bg2Tab = new MenuTab('bgTab2');
-html.editTabs.bg2Tab.element.innerText = '背景2';
-html.editTabs.element.appendChild(html.editTabs.bg2Tab.element);
-html.editTabs.fgTab = new MenuTab('fgTab');
-html.editTabs.fgTab.element.innerText = '前景';
-html.editTabs.element.appendChild(html.editTabs.fgTab.element);
-html.editTabs.colTab = new MenuTab('colTab');
-html.editTabs.colTab.element.innerText = '判定';
-html.editTabs.element.appendChild(html.editTabs.colTab.element);
-html.editTabs.changeActive = function(name) {
-	for (var i = 0 ; i < this.names.length ; i++) {
-		this[this.names[i]].isActive = false;
-	}
-	this[name].isActive = true;
-	for (var i = 0 ; i < this.names.length ; i++) {
-		this[this.names[i]].applyColor();
+var editorTabs = {
+	names: [ 'bgTab', 'bg2Tab', 'fgTab', 'colTab' ],
+	bgTab: (function() {
+		var tab = new MenuTab('bgTab', true);
+		tab.element.innerText = '背景';
+		return tab;
+	})(),
+	bg2Tab: (function() {
+		var tab = bg2Tab = new MenuTab('bg2Tab');
+		tab.element.innerText = '背景2';
+		return tab;
+	})(),
+	fgTab: (function() {
+		var tab = new MenuTab('fgTab');
+		tab.element.innerText = '前景';
+		return tab;
+	})(),
+	colTab: (function() {
+		var tab = new MenuTab('colTab');
+		tab.element.innerText = '判定';
+		return tab;
+	})(),
+	create: function() {
+		var element = document.createElement('div');
+		element.appendChild(this.bgTab.element);
+		element.appendChild(this.bg2Tab.element);
+		element.appendChild(this.fgTab.element);
+		element.appendChild(this.colTab.element);
+		return element;
+	},
+	applyColors: function() {
+		for (var i = 0, l = this.names.length; i < l; i++) {
+			this[this.names[i]].applyColor();
+		}
+	},
+	changeActive: function() {
+		for (var i = 0, l = this.names.length; i < l; i++) {
+			this[this.names[i]].isActive = false;
+		}
+		this[app.currentTab].isActive = true;
+		this.applyColors();
 	}
 };
-	
+
+var html = {};
 
 html.mapImage = document.createElement('image');
 html.mapImage.onload = function() {
@@ -128,8 +189,28 @@ html.mapImage.onclick = function(e) {
 	var cols = Math.floor(this.width / 16);
 	x = Math.floor(x / 16) | 0;
 	y = Math.floor(y / 16) | 0;
-	app.selectedChip = x + y * cols;
-	html.selectedImage.update(x*16, y*16);
+	if (app.extendMode) {
+		if (x < 6) {
+			app.chipType = Math.floor(x / 3) + Math.floor(y / 4) * 2;
+			app.typeEdit = true;
+			x = Math.floor(x / 3) * 3;
+			y = Math.floor(y / 4) * 4 + 1;
+			html.selectedImage.update(x*16, y*16, 48, 48);
+		} else if (x < 11) {
+			app.selectedChip = x - 6 + 12 + y * 17;
+			app.typeEdit = false;
+			html.selectedImage.update(x*16, y*16);
+		} else {
+			app.selectedChip = x - 11 + 12 + 272 + y * 17;
+			app.typeEdit = false;
+			html.selectedImage.update(x*16, y*16);
+		}
+
+	}
+	else {
+		app.selectedChip = x + y * cols;
+		html.selectedImage.update(x*16, y*16);
+	}
 };
 
 html.icons = document.createElement('div');
@@ -137,10 +218,10 @@ html.icons = document.createElement('div');
 html.selectedImage = document.createElement('canvas');
 html.selectedImage.width = 48;
 html.selectedImage.height = 48;
-html.selectedImage.update = function(x, y) {
+html.selectedImage.update = function(x, y, width, height) {
 	var ctx = this.getContext('2d');
 	ctx.clearRect(0, 0, 48, 48);
-	ctx.drawImage(html.mapImage, x, y, 16, 16, 0, 0, 48, 48);
+	ctx.drawImage(html.mapImage, x, y, width|16, height|16, 0, 0, 48, 48);
 	ctx.strokeStyle = '#ff5544';
 	ctx.lineWidth = 3;
 	ctx.strokeRect(0, 0, 48, 48);
@@ -172,6 +253,7 @@ html.blankChip.draw = function() {
 };
 html.blankChip.onclick = function() {
 	app.selectedChip = -1;
+	app.chipType = -1;
 	html.selectedImage.clear();
 };
 
@@ -202,12 +284,16 @@ html.geneButton.type = 'button';
 html.geneButton.id = 'gene';
 html.geneButton.value = 'コード生成';
 html.geneButton.onclick = function() {
+	var w = window.open('about:blank', '_blank');
+	/*
 	if(!html.outputArea.isDisplayed) {
 		var edit = document.getElementById('edit');
 		edit.insertBefore(html.outputArea, this);
 		html.outputArea.isDisplayed = true;
 	}
-		html.outputArea.updateValue();
+	*/
+	html.outputArea.updateValue();
+	w.document.body.appendChild(html.outputArea);
 };
 
 html.outputArea = document.createElement('textarea');
@@ -217,50 +303,13 @@ html.outputArea.rows = 30;
 html.outputArea.cols = 120;
 html.outputArea.isDisplayed = false;
 html.outputArea.updateValue = function() {
-	var txt = 'var background = new Map(16, 16);\n';
-	txt += "background.image = game.assets['" + app.imagePath + "'];\n"; 
-	txt += 'background.loadData(';
-	for (var i = 0 ; i < app.maps.bgMap._data.length ; i++) {
-		txt += '[\n'
-		for (var j = 0 ; j < app.maps.bgMap._data[0].length ; j++) {
-			txt += '    [';
-			txt += app.maps.bgMap._data[i][j].toString();
-			txt += '],\n';
-		}
-		txt = txt.slice(0,-2);
-		txt += '\n],'
-	}
-	txt = txt.slice(0,-1);
-	txt += ');\n';
-	txt += 'background.collisionData = [\n';
-	for (var i = 0 ; i < app.maps.colMap._data[0].length ; i++) {
-		txt += '    [';
-		txt += app.maps.colMap._data[0][i].toString();
-		txt += '],\n';
-	}
-	txt = txt.slice(0,-2);
-	txt += '\n],'
-
-	txt += 'var foreground = new Map(16, 16);\n';
-	txt += "foreground.image = game.assets['" + app.imagePath + "'];\n"; 
-	txt += 'foreground.loadData(';
-	for (var i = 0 ; i < app.maps.fgMap._data.length ; i++) {
-		txt += '[\n'
-		for (var j = 0 ; j < app.maps.fgMap._data[0].length ; j++) {
-			txt += '    [';
-			txt += app.maps.fgMap._data[i][j].toString();
-			txt += '],\n';
-		}
-		txt = txt.slice(0,-2);
-		txt += '\n],'
-	}
-	txt = txt.slice(0,-1);
-	txt += ');\n';
-
+	app.maps.bgMap.collisionData = app.maps.colMap._data[0];
+	var txt = '';
+	txt += app.maps.bgMap.getDataCode('backgroundMap', app.imagePath);
+	txt += app.maps.fgMap.getDataCode('foregroundMap', app.imagePath);
 	this.value = txt;
 };
 html.outputArea.onclick = function() {
 	this.focus();
 	this.select();
 };
-
