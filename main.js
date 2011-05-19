@@ -284,32 +284,14 @@ html.geneButton.type = 'button';
 html.geneButton.id = 'gene';
 html.geneButton.value = 'コード生成';
 html.geneButton.onclick = function() {
-	var w = window.open('about:blank', '_blank');
-	/*
-	if(!html.outputArea.isDisplayed) {
-		var edit = document.getElementById('edit');
-		edit.insertBefore(html.outputArea, this);
-		html.outputArea.isDisplayed = true;
-	}
-	*/
-	html.outputArea.updateValue();
-	w.document.body.appendChild(html.outputArea);
-};
-
-html.outputArea = document.createElement('textarea');
-html.outputArea.value = '';
-html.outputArea.id = 'textarea';
-html.outputArea.rows = 30;
-html.outputArea.cols = 120;
-html.outputArea.isDisplayed = false;
-html.outputArea.updateValue = function() {
-	app.maps.bgMap.collisionData = app.maps.colMap._data[0];
 	var txt = '';
+	var w = window.open('about:blank', '_blank');
+	var output = document.createElement('textarea');
+	app.maps.bgMap.collisionData = app.maps.colMap._data[0];
+	output.rows = 30;
+	output.cols = 120;
 	txt += app.maps.bgMap.getDataCode('backgroundMap', app.imagePath);
 	txt += app.maps.fgMap.getDataCode('foregroundMap', app.imagePath);
-	this.value = txt;
-};
-html.outputArea.onclick = function() {
-	this.focus();
-	this.select();
+	output.value = txt;
+	w.document.body.appendChild(output);
 };
