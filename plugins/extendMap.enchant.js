@@ -1,7 +1,5 @@
 enchant.extendMap = {};
 enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
-	_typeData: [],
-	types: [],
 	type2data: function() {
 		var len = this._typeData.length;
 		var xlen = this._typeData[0][0].length;
@@ -21,7 +19,8 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 		if (data == own
 			|| data == -1
 			|| data > 7
-			|| this.types[data].parentNum == this.types[own].baseNum) {
+			|| (typeof this._types != 'undefined')
+			&& this._types[data].parentNum == this._types[own].baseNum) {
 			return true;
 		} else {
 			return false;
@@ -42,7 +41,6 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 		if (own == -1) {
 			return -1;
 		} else if (own > 7) {
-			console.log('own > 7 [' + index + '][' + y + '][' + x + ']');
 			return this._data[index][y][x];
 		}
 		if (x == 0) {
@@ -77,12 +75,12 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 				patternNumber += 64;
 			}
 		}
-		if (x > 0 && y > 0 ) {
+		if (x > 0 && y > 0) {
 			if (this.isOwn(index, x - 1, y - 1, own)) {
 				patternNumber += 1;
 			}
 		}
-		if (x < xlen && y > 0 ) {
+		if (x < xlen && y > 0) {
 			if (this.isOwn(index, x + 1, y - 1, own)) {
 				patternNumber += 4;
 			}
@@ -122,7 +120,7 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 	match: function(ind1, ind2) {
 		var i = 0;
 		while (i < 1024) {
-			if(this.types[ind1].baseType[i] ^ this.types[ind2].parentType[i]) {
+			if(this._types[ind1].baseType[i] ^ this._types[ind2].parentType[i]) {
 				return false;
 			} else {
 				i++;
@@ -155,6 +153,7 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
     },
     loadData: function(data) {
         this._data = Array.prototype.slice.apply(arguments);
+		this._typeData = new Array();
         this._dirty = true;
         var c = 0;
 		for (var index = 0, l = this._data.length; index < l; index++) {
@@ -186,6 +185,12 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 			var img = image.clone();
 			var game = enchant.Game.instance;
 			var surface = new Surface(272, 512);
+			var Type = function(image, left, top, tileWidth, tileHeight) {
+				this.baseType = [];
+				this.parentType = [];
+				this.baseType = image.context.getImageData(left, top, tileWidth, tileHeight).data;
+				this.parentType = image.context.getImageData(left + tileWidth, top, tileWidth, tileHeight).data;
+			};
 	   		var extract = function(left, top, sx, sy) {
 				var params = [
 					[  0, 16, 48,  8, 16, 0, 48,  8 ], [  0, 56, 48,  8, 16, 8, 48,  8 ],
@@ -235,12 +240,6 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 						params[i][4], params[i][5], params[i][6], params[i][7]);
 				}
 			};
-			var Type = function(image, left, top, tileWidth, tileHeight) {
-				this.baseType = [];
-				this.parentType = [];
-				this.baseType = image.context.getImageData(left, top, tileWidth, tileHeight).data;
-				this.parentType = image.context.getImageData(left + tileWidth, top, tileWidth, tileHeight).data;
-			};
 
 			// イメージの展開
 			surface.draw(image, 96, 0, 80, 256, 192, 0, 80, 256);
@@ -254,24 +253,25 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 			}
 	
 			this._image = surface;
+			this._types = new Array();
 
 			for (var y = 0; y < 4; y++) {
 				for(var x = 0; x < 2; x++) {
 					var left = x * 48;
 					var top = y * 64;
-					this.types[x+y*2] = new Type(img, left, top, this.tileWidth, this.tileHeight);
+					this._types[x+y*2] = new Type(img, left, top, this.tileWidth, this.tileHeight);
 				}
 			}
 			for (var i = 0; i < 8; i++) {
 				for (var j = 0; j < 8; j++) {
 					if (this.match(i, j)) {
-						this.types[j].parentNum = i;
+						this._types[j].parentNum = i;
 					}
 				}
-				if (this.types[i].parentNum == undefined) {
-					this.types[i].parentNum = i;
+				if (this._types[i].parentNum == undefined) {
+					this._types[i].parentNum = i;
 				}
-				this.types[i].baseNum = i;
+				this._types[i].baseNum = i;
 			}
 
 			/*
