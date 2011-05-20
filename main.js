@@ -35,7 +35,7 @@ var mapForm = {
 		var element = document.createElement('select');
 		element.id = 'select';
 		element.options[0] = new Option('RPG', 'map0.gif');
-		element.options[1] = new Option('RPG', 'map1.gif');
+		element.options[1] = new Option('2D Scroll', 'map1.gif');
 		return element;
 	})(),
 	extendOption: (function() {
@@ -57,19 +57,27 @@ var mapForm = {
 			var hv = parseInt(h.value, 10);
 			var iv = img.options[img.selectedIndex].value;
 			var ev = ex.checked;
+			app.extendMode = ev;
 			app.imagePath = iv;
 			if(!(isNaN(wv)) && !(isNaN(hv))) {
 				var edit = document.getElementById('edit');
-				html.mapImage.src = iv;
-				app.extendMode = ev;
-				start(wv, hv, iv, ev);
-				edit.innerHTML+= '矢印キーでスクロール';
-				edit.appendChild(html.icons);
-				edit.appendChild(editorTabs.create());
-				edit.appendChild(html.mapImage);
-				edit.appendChild(html.geneButton);
-				html.blankChip.draw();
-				html.drawFunc.draw();
+				app.image = document.createElement('img');
+				app.image.src = iv;
+				app.image.onload = function() {
+					if (app.extendMode && this.width != 256 || this.height != 256) {
+						alert('256x256pxの画像を使用してください');
+						return;
+					}
+					start(wv, hv, iv, ev);
+					edit.innerHTML+= '矢印キーでスクロール';
+					edit.appendChild(editorTabs.create());
+					edit.appendChild(icons.create());
+					var d = document.createElement('div');
+					d.appendChild(palette);
+					d.appendChild(geneButton);
+					edit.appendChild(d);
+					palette.loadImage(app.image);
+				};
 			} else {
 				alert("input number");                                                  
 			}                                                                          
@@ -94,7 +102,8 @@ var mapForm = {
 
 var MenuTab = function(str, active) {
 	this.element = document.createElement('div');
-	this.element.style.width = '8%';
+	this.element.style.width = '90px';
+	this.element.style.height = '20px';
 	this.element.style.float = 'left';
 	this.element.style['text-align'] = 'center';
 	this.element.id = str;
@@ -157,6 +166,8 @@ var editorTabs = {
 	})(),
 	create: function() {
 		var element = document.createElement('div');
+		element.style.width = '360px';
+		element.style.height = '20px';
 		element.appendChild(this.bgTab.element);
 		element.appendChild(this.bg2Tab.element);
 		element.appendChild(this.fgTab.element);
@@ -177,121 +188,148 @@ var editorTabs = {
 	}
 };
 
-var html = {};
-
-html.mapImage = document.createElement('image');
-html.mapImage.onload = function() {
-	html.selectedImage.update(0,0);
-};
-html.mapImage.onclick = function(e) {
-	var x = e.pageX - this.offsetLeft;
-	var y = e.pageY - this.offsetTop;
-	var cols = Math.floor(this.width / 16);
-	x = Math.floor(x / 16) | 0;
-	y = Math.floor(y / 16) | 0;
-	if (app.extendMode) {
-		if (x < 6) {
-			app.chipType = Math.floor(x / 3) + Math.floor(y / 4) * 2;
-			app.typeEdit = true;
-			x = Math.floor(x / 3) * 3;
-			y = Math.floor(y / 4) * 4 + 1;
-			html.selectedImage.update(x*16, y*16, 48, 48);
-		} else if (x < 11) {
-			app.selectedChip = x - 6 + 12 + y * 17;
-			app.typeEdit = false;
-			html.selectedImage.update(x*16, y*16);
-		} else {
-			app.selectedChip = x - 11 + 12 + 272 + y * 17;
-			app.typeEdit = false;
-			html.selectedImage.update(x*16, y*16);
+var palette = (function() {
+	var element = document.createElement('canvas');
+	element.width = 256;
+	element.height = 256;
+	element.loadImage = function(image) {
+		if (image.width > this.width) {
+			this.width = image.width;
+		} 
+		if (image.height > this.height) {
+			this.height = image.height;
 		}
+		var ctx = this.getContext('2d');
+		ctx.drawImage(image, 0, 0, this.width, this.height);
+	};
+	element.onclick = function(e) {
+		var x = e.pageX - this.offsetLeft;
+		var y = e.pageY - this.offsetTop;
+		var cols = Math.floor(this.width / 16);
+		x = Math.floor(x / 16) | 0;
+		y = Math.floor(y / 16) | 0;
+		if (app.extendMode) {
+			if (x < 6) {
+				app.chipType = Math.floor(x / 3) + Math.floor(y / 4) * 2;
+				app.typeEdit = true;
+				x = Math.floor(x / 3) * 3;
+				y = Math.floor(y / 4) * 4 + 1;
+				icons.selected.update(app.image, x*16, y*16, 48, 48);
+			} else if (x < 11) {
+				app.selectedChip = x - 6 + 12 + y * 17;
+				app.typeEdit = false;
+				icons.selected.update(app.image, x*16, y*16);
+			} else {
+				app.selectedChip = x - 11 + 12 + 272 + y * 17;
+				app.typeEdit = false;
+				icons.selected.update(app.image, x*16, y*16);
+			}
 
+		}
+		else {
+			app.selectedChip = x + y * cols;
+			icons.selected.update(app.image, x*16, y*16);
+		}
+	};
+	return element;
+})();
+
+var icons = {
+	selected: (function() {
+		var element = document.createElement('canvas');
+		element.width = 48;
+		element.height = 48;
+		element.update = function(image, x, y, width, height) {
+			var ctx = this.getContext('2d');
+			ctx.clearRect(0, 0, 48, 48);
+			ctx.drawImage(image, x, y, width|16, height|16, 0, 0, 48, 48);
+			ctx.strokeStyle = '#ff5544';
+			ctx.lineWidth = 3;
+			ctx.strokeRect(0, 0, 48, 48);
+		};
+		element.clearMode = function() {
+			var ctx = this.getContext('2d');
+			ctx.clearRect(0, 0, 48, 48);
+			ctx.strokeStyle = '#ff5544';
+			ctx.lineWidth = 3;
+			ctx.strokeRect(0, 0, 48, 48);
+			ctx.lineWidth = 2;
+			ctx.moveTo(0, 0);
+			ctx.lineTo(48, 48);
+			ctx.stroke();
+		};
+		return element;
+	})(),
+	blank: (function() {
+		var element = document.createElement('canvas');
+		element.width = 48;
+		element.height = 48;
+		element.draw = function() {
+			var ctx = this.getContext('2d');
+			ctx.strokeStyle = 'Red';
+			ctx.lineWidth = 3;
+			ctx.strokeRect(0, 0, 48, 48);
+			ctx.lineWidth = 2;
+			ctx.moveTo(0, 0);
+			ctx.lineTo(48, 48);
+			ctx.stroke();
+		};
+		element.onclick = function() {
+			app.selectedChip = -1;
+			app.chipType = -1;
+			icons.selected.clearMode();
+		};
+		return element;
+	})(),
+	drawFunc: (function() {
+		var element = document.createElement('canvas');
+		element.width = 48;
+		element.height = 48;
+		element.draw = function() {
+			var ctx = this.getContext('2d');
+			ctx.clearRect(0, 0, 48, 48);
+			ctx.font = '20px helvetica';
+			ctx.fillText(app.drawFunc, 8, 32); 
+		};
+		element.onclick = function() {
+			if (app.drawFunc == 'pen') {
+				app.drawFunc = 'fill';
+			} else {
+				app.drawFunc = 'pen';
+			}
+			this.draw();
+		};
+		return element;
+	})(),
+	create: function() {
+		var element = document.createElement('div');
+		element.style.height = '48px';
+		element.appendChild(this.selected);
+		this.selected.update(app.image, 0, 0);
+		element.appendChild(this.blank);
+		this.blank.draw();
+		element.appendChild(this.drawFunc);
+		this.drawFunc.draw();
+		return element;
 	}
-	else {
-		app.selectedChip = x + y * cols;
-		html.selectedImage.update(x*16, y*16);
-	}
 };
 
-html.icons = document.createElement('div');
-
-html.selectedImage = document.createElement('canvas');
-html.selectedImage.width = 48;
-html.selectedImage.height = 48;
-html.selectedImage.update = function(x, y, width, height) {
-	var ctx = this.getContext('2d');
-	ctx.clearRect(0, 0, 48, 48);
-	ctx.drawImage(html.mapImage, x, y, width|16, height|16, 0, 0, 48, 48);
-	ctx.strokeStyle = '#ff5544';
-	ctx.lineWidth = 3;
-	ctx.strokeRect(0, 0, 48, 48);
-};
-html.selectedImage.clear = function() {
-	var ctx = this.getContext('2d');
-	ctx.clearRect(0, 0, 48, 48);
-	ctx.strokeStyle = '#ff5544';
-	ctx.lineWidth = 3;
-	ctx.strokeRect(0, 0, 48, 48);
-	ctx.lineWidth = 2;
-	ctx.moveTo(0, 0);
-	ctx.lineTo(48, 48);
-	ctx.stroke();
-};
-
-html.blankChip = document.createElement('canvas');
-html.blankChip.width = 48;
-html.blankChip.height = 48;
-html.blankChip.draw = function() {
-	var ctx = this.getContext('2d');
-	ctx.strokeStyle = 'Red';
-	ctx.lineWidth = 3;
-	ctx.strokeRect(0, 0, 48, 48);
-	ctx.lineWidth = 2;
-	ctx.moveTo(0, 0);
-	ctx.lineTo(48, 48);
-	ctx.stroke();
-};
-html.blankChip.onclick = function() {
-	app.selectedChip = -1;
-	app.chipType = -1;
-	html.selectedImage.clear();
-};
-
-html.drawFunc = document.createElement('canvas');
-html.drawFunc.width = 48;
-html.drawFunc.height = 48;
-html.drawFunc.draw = function() {
-	var ctx = this.getContext('2d');
-	ctx.clearRect(0, 0, 48, 48);
-	ctx.font = '20px helvetica';
-	ctx.fillText(app.drawFunc, 8, 32); 
-};
-html.drawFunc.onclick = function() {
-	if (app.drawFunc == 'pen') {
-		app.drawFunc = 'fill';
-	} else {
-		app.drawFunc = 'pen';
-	}
-	this.draw();
-};
-
-html.icons.appendChild(html.selectedImage);
-html.icons.appendChild(html.blankChip);
-html.icons.appendChild(html.drawFunc);
-
-html.geneButton = document.createElement('input');
-html.geneButton.type = 'button';
-html.geneButton.id = 'gene';
-html.geneButton.value = 'コード生成';
-html.geneButton.onclick = function() {
-	var txt = '';
-	var w = window.open('about:blank', '_blank');
-	var output = document.createElement('textarea');
-	app.maps.bgMap.collisionData = app.maps.colMap._data[0];
-	output.rows = 30;
-	output.cols = 120;
-	txt += app.maps.bgMap.getDataCode('backgroundMap', app.imagePath);
-	txt += app.maps.fgMap.getDataCode('foregroundMap', app.imagePath);
-	output.value = txt;
-	w.document.body.appendChild(output);
-};
+var geneButton = (function() {
+	var element = document.createElement('input');
+	element.type = 'button';
+	element.id = 'gene';
+	element.value = 'コード生成';
+	element.onclick = function() {
+		var txt = '';
+		var w = window.open('about:blank', '_blank');
+		var output = document.createElement('textarea');
+		app.maps.bgMap.collisionData = app.maps.colMap._data[0];
+		output.rows = 30;
+		output.cols = 120;
+		txt += app.maps.bgMap.getDataCode('backgroundMap', app.imagePath);
+		txt += app.maps.fgMap.getDataCode('foregroundMap', app.imagePath);
+		output.value = txt;
+		w.document.body.appendChild(output);
+	};
+	return element;
+})();
