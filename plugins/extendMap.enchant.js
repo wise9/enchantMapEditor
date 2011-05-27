@@ -1,3 +1,10 @@
+/**
+ *	extendMap.enchant.js
+ *
+ *	enchantMapEditor:
+ *	http://github.com/wise9/enchant.js
+ */
+
 enchant.extendMap = {};
 enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 	type2data: function() {
@@ -10,6 +17,24 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 				this._data[index][y] = new Array();
 				for (var x = 0; x < xlen; x++) {
 					this._data[index][y][x] = this.searchPattern(index, x, y);
+				}
+			}
+		}
+	},
+	data2type: function() {
+		var len = this._data.length;
+		var xlen = this._data[0][0].length;
+		var ylen = this._data[0].length;
+		this._typeData = new Array();
+		for (var index = 0; index < len; index++) { 
+			this._typeData[index] = new Array();
+			for (var y = 0; y < ylen; y++) {
+				this._typeData[index][y] = new Array();
+				for (var x = 0; x < xlen; x++) {
+					this._typeData[index][y][x] = Math.floor(this._data[index][y][x] / 68);
+					if (this._data[index][y][x] % 17 > 12) {
+						this._typeData[index][y][x] = -1;
+					}
 				}
 			}
 		}
@@ -58,7 +83,6 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 			if (this.isOwn(index, x - 1, y, own)) {
 				patternNumber += 8;
 			}
-
 		}
 		if (x < xlen) {
 			if (this.isOwn(index, x + 1, y, own)) {
@@ -120,7 +144,7 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 	match: function(ind1, ind2) {
 		var i = 0;
 		while (i < 1024) {
-			if(this._types[ind1].baseType[i] ^ this._types[ind2].parentType[i]) {
+			if (this._types[ind1].baseType[i] ^ this._types[ind2].parentType[i]) {
 				return false;
 			} else {
 				i++;
@@ -153,20 +177,14 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
     },
     loadData: function(data) {
         this._data = Array.prototype.slice.apply(arguments);
-		this._typeData = new Array();
         this._dirty = true;
+		this.data2type();
         var c = 0;
 		for (var index = 0, l = this._data.length; index < l; index++) {
-			this._typeData[index] = new Array();
 			for (var y = 0, ll = this._data[0].length; y < ll; y++) {
-				this._typeData[index][y] = new Array();
 				for (var x = 0, lll = this._data[0][0].length; x < lll; x++) {
 					if (this._data[index][y][x] >= 0) {
 						c++;
-					}
-					this._typeData[index][y][x] = Math.floor(this._data[index][y][x] / 68);
-					if (this._data[index][y][x] % 17 > 12) {
-						this._typeData[index][y][x] = -1;
 					}
 				}
             }
@@ -191,7 +209,7 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 				this.baseType = image.context.getImageData(left, top, tileWidth, tileHeight).data;
 				this.parentType = image.context.getImageData(left + tileWidth, top, tileWidth, tileHeight).data;
 			};
-	   		var extract = function(left, top, sx, sy) {
+			var extract = function(left, top, sx, sy) {
 				var params = [
 					[  0, 16, 48,  8, 16, 0, 48,  8 ], [  0, 56, 48,  8, 16, 8, 48,  8 ],
 					[  0, 16,  8, 48, 48,16,  8, 48 ], [ 40, 16,  8, 48, 56,16,  8, 48 ],
@@ -234,10 +252,8 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 					params[i][1] += top;
 					params[i][4] += sx;
 					params[i][5] += sy;
-					//params[i].unshift('image');
-					//surface.draw.apply(surface.draw, params[i]);
-					surface.draw(image, params[i][0], params[i][1], params[i][2], params[i][3],
-						params[i][4], params[i][5], params[i][6], params[i][7]);
+					params[i].unshift(image);
+					surface.draw.apply(surface, params[i]);
 				}
 			};
 
@@ -245,7 +261,7 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 			surface.draw(image, 96, 0, 80, 256, 192, 0, 80, 256);
 			surface.draw(image, 176, 0, 80, 256, 192, 256, 80, 256);
 			for (var y = 0; y < 4; y++) {
-				for(var x = 0; x < 2; x++) {
+				for (var x = 0; x < 2; x++) {
 					var left = x * 48;
 					var top = y * 64;
 					extract(left, top, 0, (x+y*2)*64); 
@@ -256,7 +272,7 @@ enchant.extendMap.ExMap = enchant.Class.create(enchant.Map, {
 			this._types = new Array();
 
 			for (var y = 0; y < 4; y++) {
-				for(var x = 0; x < 2; x++) {
+				for (var x = 0; x < 2; x++) {
 					var left = x * 48;
 					var top = y * 64;
 					this._types[x+y*2] = new Type(img, left, top, this.tileWidth, this.tileHeight);
