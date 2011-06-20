@@ -45,7 +45,7 @@ var mapForm = {
 	acceptButton: (function() {
 		var element = document.createElement('input');                            
 		element.type = 'button';                                              
-		element.value = '作成';
+		element.value = '作成 (Create)';
 		element.onclick = function() {
 			var w = document.getElementById('widthBox');
 			var h = document.getElementById('heightBox');                               
@@ -65,11 +65,11 @@ var mapForm = {
 				app.mapHeight = hv;
 				app.image.onload = function() {
 					if (app.extendMode && this.width != 256 || this.height != 256) {
-						alert('256x256pxの画像を使用してください');
+						alert('256x256pxの画像を使用してください (Use 256x256 Image)');
 						return;
 					}
 					start(wv, hv, iv, ev);
-					edit.innerHTML+= '矢印キーでスクロール';
+					edit.innerHTML+= '矢印キーでスクロール (Push Arrow Key to Scroll)';
 					editorTabs.initialize();
 					edit.appendChild(editorTabs.element);
 					edit.appendChild(icons.create());
@@ -90,13 +90,13 @@ var mapForm = {
 	})(),
 	create: function() {
 		var form = document.createElement('div');
-		form.innerHTML += '横幅: ';
+		form.innerHTML += '横幅(Width) : ';
 		form.appendChild(this.widthBox);
-		form.innerHTML += '<br />縦幅: ';
+		form.innerHTML += '<br />縦幅(Height) : ';
 		form.appendChild(this.heightBox);
-		form.innerHTML += '<br />画像: ';
+		form.innerHTML += '<br />画像(Image): ';
 		form.appendChild(this.imageMenu);
-		form.innerHTML += '<br />マップ拡張を有効にする';
+		form.innerHTML += '<br />マップ拡張を有効にする(Enable Map Extension)';
 		form.appendChild(this.extendOption);
 		form.innerHTML += '<br />';
 		form.appendChild(this.acceptButton);
@@ -329,7 +329,7 @@ var loadButton = (function() {
 	var element = document.createElement('input');
 	element.type = 'button';
 	element.id = 'loadButton';
-	element.value = 'コード読み込み';
+	element.value = 'コード読み込み (Code Import)';
 	element.onclick = function() {
 		var w = window.open('about:blank', '_blank');
 		var input = document.createElement('textarea');
@@ -338,7 +338,7 @@ var loadButton = (function() {
 		input.cols = 120;
 		var accept = document.createElement('input');
 		accept.type = 'button';
-		accept.value = '読み込み';
+		accept.value = '読み込み (Import)';
 		accept.type = 'button';
 		accept.onclick = function() {
 			try {
