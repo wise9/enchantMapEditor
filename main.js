@@ -24,9 +24,9 @@ var mapForm = {
 		return element;
 	})(),
 	heightBox: (function() {
-		var element = document.createElement('input');                               
+		var element = document.createElement('input');
 		element.type = 'text';
-		element.id = 'heightBox';                                                
+		element.id = 'heightBox';
 		return element;
 	})(),
 	imageMenu: (function() {
@@ -43,15 +43,15 @@ var mapForm = {
 		return element;
 	})(),
 	acceptButton: (function() {
-		var element = document.createElement('input');                            
-		element.type = 'button';                                              
+		var element = document.createElement('input');
+		element.type = 'button';
 		element.value = '作成 (Create)';
 		element.onclick = function() {
 			var w = document.getElementById('widthBox');
-			var h = document.getElementById('heightBox');                               
+			var h = document.getElementById('heightBox');
 			var img = document.getElementById('select');
 			var ex = document.getElementById('checkbox');
-			var wv = parseInt(w.value, 10);                                             
+			var wv = parseInt(w.value, 10);
 			var hv = parseInt(h.value, 10);
 			var iv = img.options[img.selectedIndex].value;
 			var ev = ex.checked;
@@ -83,9 +83,9 @@ var mapForm = {
 					palette.loadImage(app.image);
 				};
 			} else {
-				alert("input number");                                                  
-			}                                                                          
-		};                     
+				alert("input number");
+			}
+		};
 		return element;
 	})(),
 	create: function() {
@@ -115,14 +115,15 @@ var editorTabs = {
 	})(),
 	initialize: function() {
 		this.element.appendChild(this.addTabButton);
-		this.addNewTab('coltab', '判定');
+		this.addNewTab('coltab', '判定 (Collisions)');
 		this.addNewTab('bgtab1', 'tab1', true);
 		this.addNewTab('bgtab2', 'tab2');
 		this.applyColors();
 	},
 	addNewTab: function(id, name, active) {
 		var element = document.createElement('div');
-		element.style.width = '84px';
+		element.style.paddingLeft = '3px';
+		element.style.paddingRight = '3px';
 		element.style.height = '20px';
 		element.style.float = 'left';
 		element.style['text-align'] = 'center';
@@ -184,7 +185,7 @@ var palette = (function() {
 	element.loadImage = function(image) {
 		if (image.width > this.width) {
 			this.width = image.width;
-		} 
+		}
 		if (image.height > this.height) {
 			this.height = image.height;
 		}
@@ -233,11 +234,11 @@ var icons = (function() {
 		//
 		ctx.clearRect(48, 0, this.width - 48, this.height);
 		ctx.font = '20px helvetica';
-		ctx.fillText('-1', 48*1 + 8, 32); 
+		ctx.fillText('-1', 48*1 + 8, 32);
 		//
-		ctx.fillText('pen', 48*2 + 8, 32); 
+		ctx.fillText('pen', 48*2 + 8, 32);
 		//
-		ctx.fillText('fill', 48*3 + 8, 32); 
+		ctx.fillText('fill', 48*3 + 8, 32);
 		//
 		ctx.lineWidth = 3;
 		ctx.strokeStyle = 'Black';
@@ -282,7 +283,7 @@ var icons = (function() {
 	element.clearMode = function() {
 		var ctx = this.getContext('2d');
 		ctx.clearRect(0, 0, 48, 48);
-		ctx.lineWidth = 1; 
+		ctx.lineWidth = 1;
 		ctx.strokeStyle = 'Red';
 		ctx.strokeRect(1, 1, 46, 46);
 		ctx.beginPath();
@@ -310,10 +311,10 @@ var geneButton = (function() {
 	var element = document.createElement('input');
 	element.type = 'button';
 	element.id = 'geneButton';
-	element.value = 'コード生成';
+	element.value = 'コード生成 (Generate)';
 	element.onclick = function() {
 		var txt = '';
-		var w = window.open('about:blank', '_blank');
+		var w = window.open('', '_blank');
 		var output = document.createElement('textarea');
 		app.maps.bgMap.collisionData = app.maps.colMap._data[0];
 		output.rows = 30;
