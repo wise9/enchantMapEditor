@@ -115,14 +115,15 @@ var editorTabs = {
 	})(),
 	initialize: function() {
 		this.element.appendChild(this.addTabButton);
-		this.addNewTab('coltab', '判定');
+		this.addNewTab('coltab', '判定 (Collisions)');
 		this.addNewTab('bgtab1', 'tab1', true);
 		this.addNewTab('bgtab2', 'tab2');
 		this.applyColors();
 	},
 	addNewTab: function(id, name, active) {
 		var element = document.createElement('div');
-		element.style.width = '84px';
+		element.style.paddingLeft = '3px';
+		element.style.paddingRight = '3px';
 		element.style.height = '20px';
 		element.style.float = 'left';
 		element.style['text-align'] = 'center';
@@ -310,7 +311,7 @@ var geneButton = (function() {
 	var element = document.createElement('input');
 	element.type = 'button';
 	element.id = 'geneButton';
-	element.value = 'コード生成(Generate)';
+	element.value = 'コード生成 (Generate)';
 	element.onclick = function() {
 		var txt = '';
 		var w = window.open('', '_blank');
